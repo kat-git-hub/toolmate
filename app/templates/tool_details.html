@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Available Tools{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Available Tools</h2>
+    <div class="tool-list">
+        {% for tool in tools %}
+        <div class="tool-card">
+            <h3>{{ tool.name }}</h3>
+            <p>{{ tool.description }}</p>
+            <p><strong>Price:</strong> {{ tool.price_per_day }} €/day</p>
+            <a href="{{ url_for('tool_details', tool_id=tool.id) }}">Details</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

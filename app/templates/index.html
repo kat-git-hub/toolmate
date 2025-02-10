@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to ToolMate{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <header class="bg-dark py-5">
+        <div class="container px-5">
+            <div class="row gx-5 justify-content-center">
+                <div class="col-lg-6">
+                    <div class="text-center my-5">
+                        <h1 class="display-5 fw-bolder text-white mb-2">Why buy when you can rent?</h1>
+                        <p class="lead text-white-50 mb-4">Save money and space by renting the tools you need for any project.</p>
+                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                            <a class="btn btn-primary btn-lg px-4 me-sm-3" href="#features">Get Started</a>
+                            <a class="btn btn-outline-light btn-lg px-4" href="#">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Features section -->
+    <section class="py-5 border-bottom" id="features">
+        <div class="container mt-5">
+            <h2>User Locations</h2>
+            <div id="map" style="height: 500px;"></div>
+        </div>
+    </section>
+
+    <!-- Product Cards Section -->
+    <section class="py-5">
+        <div class="container px-5 my-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bolder">Available Tools</h2>
+                <p class="lead mb-0">Browse our tool catalog</p>
+            </div>
+            <div class="row gx-5">
+                {% for tool in tools %}
+                <div class="col-lg-4 mb-5">
+                    <div class="card h-100 shadow border-0">
+                        <img class="card-img-top" src="{{ tool.image_url }}" alt="{{ tool.name }}">
+                        <div class="card-body p-4">
+                            <h5 class="card-title">{{ tool.name }}</h5>
+                            <p class="card-text">{{ tool.description }}</p>
+                            <p class="fw-bold">${{ tool.price_per_day }} per day</p>
+                            <a class="btn btn-primary" href="/tool/{{ tool.id }}">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        var map = L.map('map').setView([52.5200, 13.4050], 6);
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    
+        var users = {{ users|tojson|safe }};
+    
+        users.forEach(user => {
+            if (user.latitude && user.longitude) {
+                let popupContent = `<b>${user.name}</b><br>ZIP: ${user.zip_code}<br><ul>`;
+    
+                if (user.tools && user.tools.length > 0) {
+                    user.tools.forEach(tool => {
+                        popupContent += `<li>${tool.name} - $${tool.price_per_day}/day</li>`;
+                    });
+                } else {
+                    popupContent += `<li>No available tools</li>`;
+                }
+    
+                popupContent += `</ul>`;
+    
+                L.marker([user.latitude, user.longitude]).addTo(map)
+                    .bindPopup(popupContent);
+            }
+        });
+    </script>
+    
+    
+{% endblock %}
