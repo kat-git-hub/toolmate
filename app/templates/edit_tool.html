@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Tool</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="name" class="form-label">Tool Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ tool.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" required>{{ tool.description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="price_per_day" class="form-label">Price per Day</label>
+            <input type="number" class="form-control" id="price_per_day" name="price_per_day" value="{{ tool.price_per_day }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Change Image (optional)</label>
+            <input type="file" class="form-control" id="image" name="image">
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('routes.my_tools') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,13 +1,19 @@
+import os
+import requests
+from app import db
+from app.models import User, Tool
+from app.forms import LoginForm, RegistrationForm, ToolForm
+from sqlalchemy.orm import joinedload
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app import db
-import requests
-from sqlalchemy.orm import joinedload
-from app.models import User, Tool
-from app.forms import LoginForm, RegistrationForm
-from werkzeug.security import generate_password_hash, check_password_hash
+
 
 routes = Blueprint("routes", __name__, url_prefix="/")
+
+UPLOAD_FOLDER = "static/images"
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 
 @routes.route("/")
@@ -35,9 +41,9 @@ def tool_details():
 @routes.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password, password):
@@ -88,14 +94,30 @@ def register():
     return render_template("registration.html", title="Registration", form=form)
 
 
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @routes.route("/add_tool", methods=["GET", "POST"])
 @login_required
 def add_tool():
-    if request.method == "POST":
-        name = request.form["name"]
-        description = request.form["description"]
-        price_per_day = float(request.form["price_per_day"])
-        image_url = request.form["image_url"]
+    form = ToolForm()
+    
+    if form.validate_on_submit():
+        name = form.name.data
+        description = form.description.data
+        price_per_day = form.price_per_day.data
+        file = request.files["image"]
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            image_url = f"/{filepath}"
+
+        else:
+            flash("Invalid file! Only PNG, JPG, JPEG, and GIF formats are allowed.", "danger")
+            return redirect(url_for("routes.add_tool"))
 
         new_tool = Tool(
             name=name,
@@ -107,11 +129,61 @@ def add_tool():
 
         db.session.add(new_tool)
         db.session.commit()
-        
-        flash("Tool successfully added!", "success")
+
+        flash("The tool has been successfully added!", "success")
         return redirect(url_for("routes.home"))
 
-    return render_template("add_tool.html", title="Add Tool")
+    return render_template("add_tool.html", title="Add Tool", form=form)
+
+
+@routes.route("/my_tools")
+@login_required
+def my_tools():
+    tools = Tool.query.filter_by(user_id=current_user.id).all()
+    return render_template("my_tools.html", tools=tools)
+
+
+@routes.route("/edit_tool/<int:tool_id>", methods=["GET", "POST"])
+@login_required
+def edit_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+
+    if tool.user_id != current_user.id:
+        flash("You are not authorized to edit this tool.", "danger")
+        return redirect(url_for("routes.my_tools"))
+
+    if request.method == "POST":
+        tool.name = request.form["name"]
+        tool.description = request.form["description"]
+        tool.price_per_day = float(request.form["price_per_day"])
+
+        file = request.files.get("image")
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join("static/images", filename)
+            file.save(filepath)
+            tool.image_url = f"/static/images/{filename}"
+
+        db.session.commit()
+        flash("Tool updated successfully!", "success")
+        return redirect(url_for("routes.my_tools"))
+
+    return render_template("edit_tool.html", tool=tool)
+
+
+@routes.route("/delete_tool/<int:tool_id>", methods=["POST"])
+@login_required
+def delete_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+
+    if tool.user_id != current_user.id:
+        flash("You are not authorized to delete this tool.", "danger")
+        return redirect(url_for("routes.my_tools"))
+
+    db.session.delete(tool)
+    db.session.commit()
+    flash("Tool deleted successfully!", "success")
+    return redirect(url_for("routes.my_tools"))
 
 
 @routes.route("/logout")

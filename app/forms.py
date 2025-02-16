@@ -1,12 +1,12 @@
 from flask_wtf import FlaskForm
 from app.models import User
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, FloatField, FileField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired(), Email(message="Invalid email format")])
+    password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
 
@@ -29,3 +29,10 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Email is in use.')
+
+class ToolForm(FlaskForm):
+    name = StringField("Tool Name", validators=[DataRequired()])
+    description = StringField("Description", validators=[DataRequired()])
+    price_per_day = FloatField("Price per day", validators=[DataRequired()])
+    image = FileField("Upload Image", validators=[DataRequired()])
+    submit = SubmitField("Add Tool")

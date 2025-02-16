@@ -3,30 +3,42 @@
 {% block title %}Add Tool{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mt-4">Add a New Tool</h2>
-    <form method="POST">
+<div class="container mt-5">
+    <h2>Add Tool</h2>
+    
+    <!-- flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('routes.add_tool') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
         <div class="mb-3">
-            <label class="form-label">Tool Name</label>
-            <input type="text" name="name" class="form-control" required>
+            <label for="name">{{ form.name.label }}</label>
+            {{ form.name(class="form-control") }}
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea name="description" class="form-control" required></textarea>
+            <label for="description">{{ form.description.label }}</label>
+            {{ form.description(class="form-control") }}
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Price Per Day ($)</label>
-            <input type="number" name="price_per_day" class="form-control" required>
+            <label for="price_per_day">{{ form.price_per_day.label }}</label>
+            {{ form.price_per_day(class="form-control") }}
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Image URL</label>
-            <input type="text" name="image_url" class="form-control" required>
+            <label for="image">{{ form.image.label }}</label>
+            {{ form.image(class="form-control") }}
         </div>
 
-        <button type="submit" class="btn btn-primary">Add Tool</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
 {% endblock %}

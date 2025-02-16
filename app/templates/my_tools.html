@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}My Tools{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Tools</h2>
+    <a href="{{ url_for('routes.add_tool') }}" class="btn btn-primary mb-3">➕ Add Tool</a>
+    <div class="row">
+        {% for tool in tools %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ tool.image_url }}" class="card-img-top" alt="{{ tool.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ tool.name }}</h5>
+                    <p class="card-text">{{ tool.description }}</p>
+                    <p class="fw-bold">${{ tool.price_per_day }} per day</p>
+                    <a href="{{ url_for('routes.edit_tool', tool_id=tool.id) }}" class="btn btn-warning">✏️ Edit</a>
+                    <form action="{{ url_for('routes.delete_tool', tool_id=tool.id) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?');">🗑 Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p>You haven't added any tools yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
