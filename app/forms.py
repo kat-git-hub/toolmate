@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from app.models import User
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, FloatField, FileField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, FloatField, FileField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
 
 
@@ -34,5 +34,9 @@ class ToolForm(FlaskForm):
     name = StringField("Tool Name", validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
     price_per_day = FloatField("Price per day", validators=[DataRequired()])
+    category = SelectField("Category",
+        choices=[("power_tools", "Power Tools"), ("hand_tools", "Hand Tools"), ("garden", "Garden"), ("other", "Other")],
+        validators=[DataRequired()]
+    )
     image = FileField("Upload Image", validators=[DataRequired()])
     submit = SubmitField("Add Tool")

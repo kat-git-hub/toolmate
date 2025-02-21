@@ -10,6 +10,8 @@ class Tool(db.Model):
     price_per_day = db.Column(db.Float, nullable=False)
     image_url = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", name="fk_tool_user_id"), nullable=False)
+    category = db.Column(db.String(50), nullable=True)
+    is_available = db.Column(db.Boolean, default=True) 
 
 
 class User(db.Model, UserMixin):

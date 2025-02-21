@@ -11,10 +11,10 @@
                     <div class="text-center my-5">
                         <h1 class="display-5 fw-bolder text-white mb-2">Why buy when you can rent?</h1>
                         <p class="lead text-white-50 mb-4">Save money and space by renting the tools you need for any project.</p>
-                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                        <!-- <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
                             <a class="btn btn-primary btn-lg px-4 me-sm-3" href="#features">Get Started</a>
                             <a class="btn btn-outline-light btn-lg px-4" href="#">Learn More</a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -24,9 +24,11 @@
     <!-- Features section -->
     <section class="py-5 border-bottom" id="features">
         <div class="container mt-5">
+            <div class="text-center mb-5">
             <h2>User Locations</h2>
             <div id="map" style="height: 500px;"></div>
         </div>
+    </div>
     </section>
 
     <!-- Product Cards Section -->
@@ -36,23 +38,73 @@
                 <h2 class="fw-bolder">Available Tools</h2>
                 <p class="lead mb-0">Browse our tool catalog</p>
             </div>
-            <div class="row gx-5">
-                {% for tool in tools %}
-                <div class="col-lg-4 mb-5">
-                    <div class="card h-100 shadow border-0">
-                        <img class="card-img-top" src="{{ tool.image_url }}" alt="{{ tool.name }}">
-                        <div class="card-body p-4">
-                            <h5 class="card-title">{{ tool.name }}</h5>
-                            <p class="card-text">{{ tool.description }}</p>
-                            <p class="fw-bold">${{ tool.price_per_day }} per day</p>
-                            <a class="btn btn-primary" href="/tool/{{ tool.id }}">View Details</a>
-                        </div>
-                    </div>
+        
+        <!-- Filter -->
+        <div class="container my-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="searchInput">Search by Name:</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Enter tool name">
                 </div>
-                {% endfor %}
+                <div class="col-md-3">
+                    <label for="categoryFilter">Filter by Category:</label>
+                    <select id="categoryFilter" class="form-select">
+                        <option value="all">All Categories</option>
+                        <option value="power_tools">Power Tools</option>
+                        <option value="hand_tools">Hand Tools</option>
+                        <option value="garden">Garden</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="priceFilterMin">Min Price:</label>
+                    <input type="number" id="priceFilterMin" class="form-control" placeholder="0">
+                </div>
+                <div class="col-md-3">
+                    <label for="priceFilterMax">Max Price:</label>
+                    <input type="number" id="priceFilterMax" class="form-control" placeholder="100">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <label for="availabilityFilter">Availability:</label>
+                    <select id="availabilityFilter" class="form-select">
+                        <option value="all">All</option>
+                        <option value="available">Available</option>
+                        <option value="unavailable">Not Available</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button id="applyFilters" class="btn btn-primary mt-4">Apply Filters</button>
+                </div>
             </div>
         </div>
+        
+        <!-- Cards -->
+        <div class="row gx-5" id="toolsContainer">
+            {% for tool in tools %}
+            <div class="col-lg-4 mb-5 tool-card" data-category="{{ tool.category }}" data-price="{{ tool.price_per_day }}" data-available="{{ tool.is_available }}">
+                <div class="card h-100 shadow border-0">
+                    <img class="card-img-top" src="{{ tool.image_url }}" alt="{{ tool.name }}">
+                    <div class="card-body p-4">
+                        <h5 class="card-title">{{ tool.name }}</h5>
+                        <p class="card-text">{{ tool.description }}</p>
+                        <p class="fw-bold">${{ tool.price_per_day }} per day</p>
+                        <p class="text-muted">Category: {{ tool.category }}</p>
+                        {% if tool.is_available %}
+                            <p class="text-success">✅ Available</p>
+                        {% else %}
+                            <p class="text-danger">❌ Not Available</p>
+                        {% endif %}
+                        <a class="btn btn-primary" href="{{ url_for('routes.tool_details', tool_id=tool.id) }}">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
     </section>
+
 
     <script>
         var map = L.map('map').setView([52.5200, 13.4050], 6);
@@ -80,6 +132,37 @@
                 L.marker([user.latitude, user.longitude]).addTo(map)
                     .bindPopup(popupContent);
             }
+        });
+    </script>
+
+    <script>
+        document.getElementById("applyFilters").addEventListener("click", function () {
+            let searchText = document.getElementById("searchInput").value.toLowerCase();
+            let selectedCategory = document.getElementById("categoryFilter").value;
+            let minPrice = document.getElementById("priceFilterMin").value ? parseFloat(document.getElementById("priceFilterMin").value) : 0;
+            let maxPrice = document.getElementById("priceFilterMax").value ? parseFloat(document.getElementById("priceFilterMax").value) : Infinity;
+            let selectedAvailability = document.getElementById("availabilityFilter").value;
+    
+            document.querySelectorAll(".tool-card").forEach(card => {
+                let toolName = card.querySelector(".card-title").innerText.toLowerCase();
+                let toolCategory = card.getAttribute("data-category");
+                let toolPrice = parseFloat(card.getAttribute("data-price"));
+                let toolAvailability = card.getAttribute("data-available");
+    
+                let matchesName = toolName.includes(searchText);
+                let matchesCategory = selectedCategory === "all" || toolCategory === selectedCategory;
+                let matchesPrice = toolPrice >= minPrice && toolPrice <= maxPrice;
+                let matchesAvailability = 
+                    selectedAvailability === "all" || 
+                    (selectedAvailability === "available" && toolAvailability === "True") || 
+                    (selectedAvailability === "unavailable" && toolAvailability === "False");
+    
+                if (matchesName && matchesCategory && matchesPrice && matchesAvailability) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
         });
     </script>
     

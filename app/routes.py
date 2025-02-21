@@ -33,11 +33,6 @@ def home():
     return render_template("index.html", tools=tools, users=users_data)
 
 
-@routes.route("/tool_details")
-def tool_details():
-    return render_template("tool_details.html", title="Details")
-
-
 @routes.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -107,6 +102,7 @@ def add_tool():
         name = form.name.data
         description = form.description.data
         price_per_day = form.price_per_day.data
+        category = form.category.data
         file = request.files["image"]
 
         if file and allowed_file(file.filename):
@@ -123,6 +119,7 @@ def add_tool():
             name=name,
             description=description,
             price_per_day=price_per_day,
+            category=category,
             image_url=image_url,
             owner=current_user
         )
@@ -184,6 +181,45 @@ def delete_tool(tool_id):
     db.session.commit()
     flash("Tool deleted successfully!", "success")
     return redirect(url_for("routes.my_tools"))
+
+
+@routes.route("/tool/<int:tool_id>")
+def tool_details(tool_id):
+    tool = Tool.query.get(tool_id)
+    if not tool:
+        flash("Requested tool not found.", "warning")
+        return redirect(url_for("routes.home"))
+    return render_template("tool_details.html", tool=tool)
+
+@routes.route("/rent_tool/<int:tool_id>", methods=["POST"])
+@login_required
+def rent_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+
+    if not tool.is_available:
+        flash("This tool is already rented!", "warning")
+        return redirect(url_for("routes.home"))
+
+    # Block
+    tool.is_available = False
+    db.session.commit()
+
+    flash(f"You have rented {tool.name}!", "success")
+    return redirect(url_for("routes.home"))
+
+
+@routes.route("/return_tool/<int:tool_id>", methods=["POST"])
+@login_required
+def return_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+
+    #is available
+    tool.is_available = True
+    db.session.commit()
+
+    flash(f"{tool.name} has been returned and is available for rent!", "info")
+    return redirect(url_for("routes.home"))
+
 
 
 @routes.route("/logout")
