@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "tool-rental"
+package-mode = false
 version = "0.1.0"
 description = ""
 authors = ["katiridium"]
 readme = "README.md"
+packages = [
+  { include = "app" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
