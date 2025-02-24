@@ -1,11 +1,12 @@
 from flask_wtf import FlaskForm
 from app.models import User
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, FloatField, FileField, SelectField
-from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, FloatField, FileField, SelectField  # noqa: E501
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length  # noqa: E501
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email(message="Invalid email format")])
+    email = StringField("Email", validators=[DataRequired(),
+                                             Email(message="Invalid email format")])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
@@ -30,13 +31,16 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Email is in use.')
 
+
 class ToolForm(FlaskForm):
     name = StringField("Tool Name", validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
     price_per_day = FloatField("Price per day", validators=[DataRequired()])
     category = SelectField("Category",
-        choices=[("power_tools", "Power Tools"), ("hand_tools", "Hand Tools"), ("garden", "Garden"), ("other", "Other")],
-        validators=[DataRequired()]
-    )
+                           choices=[("power_tools", "Power Tools"),
+                                    ("hand_tools", "Hand Tools"),
+                                    ("garden", "Garden"),
+                                    ("other", "Other")],
+                           validators=[DataRequired()])
     image = FileField("Upload Image", validators=[DataRequired()])
     submit = SubmitField("Add Tool")

@@ -172,3 +172,4 @@ add_user_tool.py
 tool_rental.txt
 package.json
 package-lock.json
+.flake8

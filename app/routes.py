@@ -29,7 +29,7 @@ def home():
         "longitude": user.longitude if user.longitude is not None else 0,
         "tools": [{"id": tool.id, "name": tool.name, "price_per_day": tool.price_per_day} for tool in user.tools]
     } for user in users]
-    
+
     return render_template("index.html", tools=tools, users=users_data)
 
 
@@ -47,7 +47,7 @@ def login():
             return redirect(url_for("routes.home"))
         else:
             flash("Invalid email or password.", "danger")
-    
+
     return render_template("login.html", title="Sign In", form=form)
 
 
@@ -97,7 +97,7 @@ def allowed_file(filename):
 @login_required
 def add_tool():
     form = ToolForm()
-    
+
     if form.validate_on_submit():
         name = form.name.data
         description = form.description.data
@@ -191,6 +191,7 @@ def tool_details(tool_id):
         return redirect(url_for("routes.home"))
     return render_template("tool_details.html", tool=tool)
 
+
 @routes.route("/rent_tool/<int:tool_id>", methods=["POST"])
 @login_required
 def rent_tool(tool_id):
@@ -213,13 +214,11 @@ def rent_tool(tool_id):
 def return_tool(tool_id):
     tool = Tool.query.get_or_404(tool_id)
 
-    #is available
     tool.is_available = True
     db.session.commit()
 
     flash(f"{tool.name} has been returned and is available for rent!", "info")
     return redirect(url_for("routes.home"))
-
 
 
 @routes.route("/logout")
@@ -237,8 +236,7 @@ def logout():
 #         password="hashed_password_here",
 #         zip_code="10115"
 #     )
-    
-#    
+#
 #     test_user.latitude, test_user.longitude = get_coordinates(test_user.zip_code)
 
 #     db.session.add(test_user)
@@ -248,13 +246,12 @@ def logout():
 #     return redirect(url_for("routes.home"))
 
 
-
 def get_coordinates(zip_code):
     url = f"https://nominatim.openstreetmap.org/search?postalcode={zip_code}&format=json"
     response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    
+
     if response.status_code == 200 and response.json():
         location = response.json()[0]
         return float(location["lat"]), float(location["lon"])
-    
+
     return None, None  # If couldn't find the coordinates

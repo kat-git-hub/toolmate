@@ -10,8 +10,10 @@ migrate = Migrate()
 db = SQLAlchemy()
 login_manager = LoginManager()
 
+
 def create_app():
-    app = Flask(__name__, template_folder="templates", static_folder="../static")
+    app = Flask(__name__, template_folder="templates",
+                static_folder="../static")
     app.config.from_object(Config)
 
     db.init_app(app)
@@ -19,11 +21,10 @@ def create_app():
     login_manager.init_app(app)
 
     from app.models import User
-    
+
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
-
 
     from .routes import routes
     app.register_blueprint(routes)

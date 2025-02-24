@@ -11,7 +11,7 @@ class Tool(db.Model):
     image_url = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", name="fk_tool_user_id"), nullable=False)
     category = db.Column(db.String(50), nullable=True)
-    is_available = db.Column(db.Boolean, default=True) 
+    is_available = db.Column(db.Boolean, default=True)
 
 
 class User(db.Model, UserMixin):
@@ -24,11 +24,8 @@ class User(db.Model, UserMixin):
     longitude = db.Column(db.Float, nullable=True)
     tools = db.relationship("Tool", backref="owner", lazy=True)
 
-
     def get_coordinates(zip_code, country="Germany"):
-
         url = f"https://nominatim.openstreetmap.org/search?postalcode={zip_code}&country={country}&format=json"
-    
         headers = {"User-Agent": "ToolMateApp/1.0 (contact@example.com)"}
 
         try:
@@ -37,7 +34,7 @@ class User(db.Model, UserMixin):
 
             data = response.json()
             if not data:
-                return None, None 
+                return None, None
 
             latitude = float(data[0]["lat"])
             longitude = float(data[0]["lon"])
