@@ -22,7 +22,15 @@ jobs:
     - name: Lint with flake8
       run: |
         make lint
-    - name: Test & publish code coverage
+
+    - name: Run Tests with Coverage
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        FLASK_ENV: testing
+      run: |
+          make test-coverage
+  
+    - name: Publish Test Coverage
       uses: paambaati/codeclimate-action@v2.7.4
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
