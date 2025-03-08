@@ -1,7 +1,8 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from config import Config
+from config import Config, TestingConfig
 from flask_migrate import Migrate
 
 migrate = Migrate()
@@ -14,7 +15,10 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__, template_folder="templates",
                 static_folder="../static")
-    app.config.from_object(Config)
+    if os.getenv("FLASK_ENV") == "testing":
+        app.config.from_object(TestingConfig)
+    else:
+        app.config.from_object(Config)
 
     db.init_app(app)
     migrate.init_app(app, db)

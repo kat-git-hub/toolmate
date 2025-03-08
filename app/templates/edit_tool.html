@@ -19,6 +19,15 @@
             <input type="number" class="form-control" id="price_per_day" name="price_per_day" value="{{ tool.price_per_day }}" required>
         </div>
         <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select id="category" name="category" class="form-select">
+                <option value="power_tools" {% if tool.category == 'power_tools' %}selected{% endif %}>Power Tools</option>
+                <option value="hand_tools" {% if tool.category == 'hand_tools' %}selected{% endif %}>Hand Tools</option>
+                <option value="garden" {% if tool.category == 'garden' %}selected{% endif %}>Garden</option>
+                <option value="other" {% if tool.category == 'other' %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <div class="mb-3">
             <label for="image" class="form-label">Change Image (optional)</label>
             <input type="file" class="form-control" id="image" name="image">
         </div>

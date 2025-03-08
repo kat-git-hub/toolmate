@@ -1,3 +1,4 @@
+# 
 import os
 from dotenv import load_dotenv
 
@@ -11,6 +12,20 @@ if not os.path.exists(INSTANCE_DIR):
 
 
 class Config:
+    """Base configuration (default)."""
     SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
-    SQLALCHEMY_DATABASE_URI = f"sqlite:////{os.path.join(INSTANCE_DIR, 'tools.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # ✅ Switch database depending on environment
+    if os.getenv("FLASK_ENV") == "testing":
+        SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"  # Use in-memory DB for testing
+    else:
+        SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(INSTANCE_DIR, 'tools.db')}"  # Production DB
+
+
+class TestingConfig(Config):
+    """Configuration for testing."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    WTF_CSRF_ENABLED = False  # Disable CSRF in tests
+    LOGIN_DISABLED = False  # Allow login without authentication
