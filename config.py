@@ -26,6 +26,7 @@ class Config:
 class TestingConfig(Config):
     """Configuration for testing."""
     TESTING = True
+    SECRET_KEY = "test_secret_key"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False  # Disable CSRF in tests
     LOGIN_DISABLED = False  # Allow login without authentication

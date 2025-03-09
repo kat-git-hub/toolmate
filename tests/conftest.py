@@ -3,6 +3,7 @@ import uuid
 import pytest
 from app import create_app, db
 from app.models import User
+from config import TestingConfig
 from werkzeug.security import generate_password_hash
 
 os.environ["FLASK_ENV"] = "testing"
@@ -12,11 +13,12 @@ os.environ["FLASK_ENV"] = "testing"
 def app():
     """Creates a new Flask test application."""
     app = create_app()
-    app.config.update({
-        "TESTING": True,
-        "WTF_CSRF_ENABLED": False,
-        "LOGIN_DISABLED": False
-    })
+    app.config.from_object(TestingConfig)
+    # app.config.update({
+    #     "TESTING": True,
+    #     "WTF_CSRF_ENABLED": False,
+    #     "LOGIN_DISABLED": False
+    # })
 
     with app.app_context():
         db.create_all()
