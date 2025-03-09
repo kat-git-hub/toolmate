@@ -35,3 +35,27 @@ def test_login(client, new_user):
 
     assert response.status_code == 200
     assert b"Login successful!" in response.data
+
+def test_register_missing_field(client):
+    """Test user registration with missing fields."""
+    response = client.post("/register", data={
+        "name": "",
+        "email": "user@example.com",
+        "zip_code": "10115",
+        "password": "password",
+        "password2": "password"
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"This field is required" in response.data
+
+
+def test_login_invalid_password(client, new_user):
+    """Test login with invalid password."""
+    response = client.post("/login", data={
+        "email": new_user.email,
+        "password": "wrongpassword"
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"Invalid email or password" in response.data

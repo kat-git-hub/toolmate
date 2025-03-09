@@ -52,3 +52,60 @@ def test_add_tool(client, app):
 
         assert response.status_code == 200, f"Unexpected status code: {response.status_code}"
         assert b"The tool has been successfully added!" in response.data, "Flash message missing!"
+
+
+def test_edit_tool(client, new_user, db_session):
+    """Test editing an existing tool."""
+    client.post("/login", data={"email": new_user.email, "password": "securepassword"}, follow_redirects=True)
+
+    tool = Tool(
+        name="Old Name",
+        description="Old Description",
+        price_per_day=5.0,
+        category="hand_tools",
+        user_id=new_user.id,
+        image_url="https://example.com/tool.jpg",
+        is_available=True
+    )
+    db_session.session.add(tool)
+    db_session.session.commit()
+
+    response = client.post(f"/edit_tool/{tool.id}", data={
+        "name": "Updated Name",
+        "description": "Updated Description",
+        "price_per_day": "8",
+        "category": "power_tools"
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"Tool updated successfully" in response.data
+
+
+def test_delete_tool(client, new_user, db_session,app):
+    """Test deleting a tool."""
+    client.post("/login", data={"email": new_user.email, "password": "securepassword"}, follow_redirects=True)
+
+    tool = Tool(
+        name="Delete Me",
+        description="This tool will be deleted",
+        price_per_day=7.5,
+        category="gardening_tools",
+        user_id=new_user.id,
+        image_url="https://example.com/tool.jpg",
+        is_available=True
+    )
+    db_session.session.add(tool)
+    db_session.session.commit()
+
+    tool_id = tool.id
+
+    assert Tool.query.get(tool_id) is not None
+
+    response = client.post(f"/delete_tool/{tool_id}", follow_redirects=True)
+
+    with app.app_context():
+        deleted_tool = Tool.query.get(tool_id)
+
+    assert response.status_code == 200
+    assert b"Tool deleted successfully!" in response.data
+    assert deleted_tool is None, "Tool was not deleted from the database!"

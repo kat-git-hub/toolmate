@@ -14,11 +14,6 @@ def app():
     """Creates a new Flask test application."""
     app = create_app()
     app.config.from_object(TestingConfig)
-    # app.config.update({
-    #     "TESTING": True,
-    #     "WTF_CSRF_ENABLED": False,
-    #     "LOGIN_DISABLED": False
-    # })
 
     with app.app_context():
         db.create_all()
