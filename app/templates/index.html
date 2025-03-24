@@ -32,46 +32,44 @@
             <p class="lead mb-0">Browse our tool catalog</p>
         </div>
 
-        <!-- Filters -->
-        <div class="container my-4">
+        <!--Filtration-->
+        <form method="GET" action="{{ url_for('routes.home') }}">
             <div class="row">
                 <div class="col-md-3">
-                    <label for="searchInput">Search by Name:</label>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Enter tool name">
+                    <label>Search by Name:</label>
+                    <input type="text" name="search" class="form-control" value="{{ request.args.get('search', '') }}">
                 </div>
                 <div class="col-md-3">
-                    <label for="categoryFilter">Filter by Category:</label>
-                    <select id="categoryFilter" class="form-select">
-                        <option value="all">All Categories</option>
-                        <option value="power_tools">Power Tools</option>
-                        <option value="hand_tools">Hand Tools</option>
-                        <option value="garden">Garden</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="priceFilterMin">Min Price:</label>
-                    <input type="number" id="priceFilterMin" class="form-control" placeholder="0">
-                </div>
-                <div class="col-md-3">
-                    <label for="priceFilterMax">Max Price:</label>
-                    <input type="number" id="priceFilterMax" class="form-control" placeholder="100">
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-md-3">
-                    <label for="availabilityFilter">Availability:</label>
-                    <select id="availabilityFilter" class="form-select">
+                    <label>Category:</label>
+                    <select name="category" class="form-select">
                         <option value="all">All</option>
-                        <option value="available">Available</option>
-                        <option value="unavailable">Not Available</option>
+                        <option value="power_tools" {% if request.args.get('category') == 'power_tools' %}selected{% endif %}>Power Tools</option>
+                        <option value="hand_tools" {% if request.args.get('category') == 'hand_tools' %}selected{% endif %}>Hand Tools</option>
+                        <option value="garden" {% if request.args.get('category') == 'garden' %}selected{% endif %}>Garden</option>
+                        <option value="other" {% if request.args.get('category') == 'other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button id="applyFilters" class="btn btn-primary mt-4">Apply Filters</button>
+                    <label>Min Price:</label>
+                    <input type="number" name="min_price" class="form-control" value="{{ request.args.get('min_price', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label>Max Price:</label>
+                    <input type="number" name="max_price" class="form-control" value="{{ request.args.get('max_price', '') }}">
+                </div>
+                <div class="col-md-3 mt-3">
+                    <label>Availability:</label>
+                    <select name="availability" class="form-select">
+                        <option value="all" {% if request.args.get('availability') == 'all' %}selected{% endif %}>All</option>
+                        <option value="available" {% if request.args.get('availability') == 'available' %}selected{% endif %}>Available</option>
+                        <option value="unavailable" {% if request.args.get('availability') == 'unavailable' %}selected{% endif %}>Not Available</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mt-4">
+                    <button type="submit" class="btn btn-primary mt-2">Apply Filters</button>
                 </div>
             </div>
-        </div>
+        </form>
 
         <!-- Cards -->
         <div class="row gx-5" id="toolsContainer">
@@ -106,157 +104,65 @@
             {% endfor %}
         </div>
 
-  
         <!-- Pagination Controls (Only for Tools) -->
         <nav aria-label="Page navigation">
+            {% set args = request.args.to_dict() %}
+            {% set _ = args.pop('page', None) %}  {# Remove 'page' so it's not passed twice #}
+
             <ul class="pagination justify-content-center">
                 {% if pagination.has_prev %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('routes.home', page=pagination.prev_num) }}">Previous</a>
+                        <a class="page-link" href="{{ url_for('routes.home', page=pagination.prev_num, **args) }}">Previous</a>
                     </li>
                 {% endif %}
-                
-                {% for page in pagination.iter_pages() %}
-                    {% if page %}
-                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
-                            <a class="page-link" href="{{ url_for('routes.home', page=page) }}">{{ page }}</a>
+            
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('routes.home', page=page_num, **args) }}">{{ page_num }}</a>
                         </li>
                     {% else %}
-                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
                     {% endif %}
                 {% endfor %}
-
+            
                 {% if pagination.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('routes.home', page=pagination.next_num) }}">Next</a>
+                        <a class="page-link" href="{{ url_for('routes.home', page=pagination.next_num, **args) }}">Next</a>
                     </li>
                 {% endif %}
-            </ul>
+            </ul>            
         </nav>
     </div>
 </section>
 
 <script>
-    var map = L.map("map").setView([52.5200, 13.4050], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
+    const map = L.map('map').setView([52.5200, 13.4050], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-    
-    var users = {{ users|tojson|safe }};
-    var markers = [];
-    
-    function updateMap(filteredToolIds = null) {
-        markers.forEach(marker => map.removeLayer(marker));
-        markers = [];
-    
-        // If no filter applied, show all tools
-        let toolIdsToShow = filteredToolIds || new Set(users.flatMap(user => user.tools.map(tool => tool.id)));
-    
-        users.forEach(user => {
-            const userHasVisibleTool = user.tools.some(tool => toolIdsToShow.has(tool.id));
-    
-            if (user.latitude && user.longitude && userHasVisibleTool) {
+
+    const users = {{ users|tojson|safe }};
+    const toolIds = new Set([
+        {% for tool in tools %}{{ tool.id }}, {% endfor %}
+    ]);
+
+    users.forEach(user => {
+        if (user.latitude && user.longitude) {
+            const visibleTools = user.tools.filter(tool => toolIds.has(tool.id));
+            if (visibleTools.length > 0) {
                 let popupContent = `<b>${user.name}</b><br>ZIP: ${user.zip_code}<br><ul>`;
-                user.tools.forEach(tool => {
-                    if (toolIdsToShow.has(tool.id)) {
-                        popupContent += `<li>${tool.name} - $${tool.price_per_day}/day</li>`;
-                    }
+                visibleTools.forEach(tool => {
+                    popupContent += `<li>${tool.name} - $${tool.price_per_day}/day</li>`;
                 });
                 popupContent += `</ul>`;
-    
-                const marker = L.marker([user.latitude, user.longitude])
-                    .bindPopup(popupContent)
-                    .addTo(map);
-    
-                markers.push(marker);
+
+                L.marker([user.latitude, user.longitude])
+                    .addTo(map)
+                    .bindPopup(popupContent);
             }
-        });
-    }
-    
-    function getMatchingToolIds() {
-        const searchText = document.getElementById("searchInput").value.toLowerCase();
-        const selectedCategory = document.getElementById("categoryFilter").value;
-        const minPrice = parseFloat(document.getElementById("priceFilterMin").value) || 0;
-        const maxPrice = parseFloat(document.getElementById("priceFilterMax").value) || Infinity;
-        const selectedAvailability = document.getElementById("availabilityFilter").value;
-    
-        const matchingToolIds = new Set();
-    
-        document.querySelectorAll(".tool-card").forEach(card => {
-            const toolId = parseInt(card.getAttribute("data-tool-id"));
-            const toolName = card.querySelector(".card-title").innerText.toLowerCase();
-            const toolCategory = card.getAttribute("data-category");
-            const toolPrice = parseFloat(card.getAttribute("data-price"));
-            const toolAvailability = card.getAttribute("data-available");
-    
-            const matches =
-                toolName.includes(searchText) &&
-                (selectedCategory === "all" || toolCategory === selectedCategory) &&
-                toolPrice >= minPrice && toolPrice <= maxPrice &&
-                (selectedAvailability === "all" ||
-                    (selectedAvailability === "available" && toolAvailability === "True") ||
-                    (selectedAvailability === "unavailable" && toolAvailability === "False"));
-    
-            if (matches) {
-                matchingToolIds.add(toolId);
-            }
-    
-            // Show or hide the card
-            card.style.display = matches ? "block" : "none";
-        });
-    
-        return matchingToolIds;
-    }
-    
-    const cardsPerPage = 6;
-    let currentPage = 1;
-    
-    function paginateCards(filteredToolIds) {
-        const allCards = Array.from(document.querySelectorAll(".tool-card"));
-        const filteredCards = allCards.filter(card => card.style.display !== "none");
-        const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
-    
-        filteredCards.forEach((card, index) => {
-            card.style.display = (index >= (currentPage - 1) * cardsPerPage && index < currentPage * cardsPerPage)
-                ? "block"
-                : "none";
-        });
-    
-        const paginationContainer = document.getElementById("paginationContainer");
-        if (paginationContainer) paginationContainer.innerHTML = "";
-    
-        for (let i = 1; i <= totalPages; i++) {
-            const li = document.createElement("li");
-            li.className = `page-item ${i === currentPage ? "active" : ""}`;
-            const a = document.createElement("a");
-            a.className = "page-link";
-            a.href = "#";
-            a.innerText = i;
-            a.addEventListener("click", function (e) {
-                e.preventDefault();
-                currentPage = i;
-                paginateCards(filteredToolIds);
-                updateMap(filteredToolIds);  // update map based on filtered tool ids, not paginated only
-            });
-            li.appendChild(a);
-            paginationContainer?.appendChild(li);
         }
-    }
-    
-    function applyFilters() {
-        currentPage = 1;
-        const matchingToolIds = getMatchingToolIds();
-        paginateCards(matchingToolIds);
-        updateMap(matchingToolIds);
-    }
-    
-    document.getElementById("applyFilters").addEventListener("click", applyFilters);
-    
-    // Initialize on load
-    window.addEventListener("DOMContentLoaded", () => {
-        applyFilters();  // Show all tools & pins by default
     });
-    </script>
-        
+</script>
 
 {% endblock %}

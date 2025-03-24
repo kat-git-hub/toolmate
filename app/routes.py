@@ -46,17 +46,70 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 #     ]
 #     return render_template("index.html", tools=tools, users=users_data)
 
-@routes.route("/")
-def home():
-    page = request.args.get("page", 1, type=int)  # Get page number from query params
-    per_page = 6  # Number of tools per page
+# @routes.route("/")
+# def home():
+#     page = request.args.get("page", 1, type=int)  # Get page number from query params
+#     per_page = 6  # Number of tools per page
 
-    tools = Tool.query.paginate(page=page, per_page=per_page, error_out=False)
+#     tools = Tool.query.paginate(page=page, per_page=per_page, error_out=False)
+
+#     users = User.query.options(joinedload(User.tools)).filter(
+#         User.latitude.isnot(None), User.longitude.isnot(None)
+#     ).all()
+    
+#     users_data = [
+#         {
+#             "name": user.name,
+#             "zip_code": user.zip_code or "",
+#             "latitude": user.latitude or 0,
+#             "longitude": user.longitude or 0,
+#             "tools": [
+#                 {"id": tool.id, "name": tool.name, "price_per_day": tool.price_per_day}
+#                 for tool in user.tools
+#             ],
+#         }
+#         for user in users
+#     ]
+
+#     return render_template("index.html", tools=tools.items,         # actual paginated items for cards
+#     pagination=tools,          # full pagination object for .has_prev, .iter_pages, etc.
+#     users=users_data)
+from sqlalchemy import and_
+
+@routes.route("/", methods=["GET"])
+def home():
+    page = request.args.get("page", 1, type=int)
+    per_page = 6
+
+    # Read filter inputs from query parameters
+    search = request.args.get("search", "", type=str)
+    category = request.args.get("category", "", type=str)
+    min_price = request.args.get("min_price", 0.0, type=float)
+    max_price = request.args.get("max_price", 9999.0, type=float)
+    availability = request.args.get("availability", "all", type=str)
+
+    query = Tool.query
+
+    if search:
+        query = query.filter(Tool.name.ilike(f"%{search}%"))
+
+    if category and category != "all":
+        query = query.filter_by(category=category)
+
+    query = query.filter(and_(Tool.price_per_day >= min_price, Tool.price_per_day <= max_price))
+
+    if availability == "available":
+        query = query.filter_by(is_available=True)
+    elif availability == "unavailable":
+        query = query.filter_by(is_available=False)
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    tools = pagination.items
 
     users = User.query.options(joinedload(User.tools)).filter(
         User.latitude.isnot(None), User.longitude.isnot(None)
     ).all()
-    
+
     users_data = [
         {
             "name": user.name,
@@ -71,9 +124,8 @@ def home():
         for user in users
     ]
 
-    return render_template("index.html", tools=tools.items,         # actual paginated items for cards
-    pagination=tools,          # full pagination object for .has_prev, .iter_pages, etc.
-    users=users_data)
+    return render_template("index.html", tools=tools, users=users_data, pagination=pagination)
+
 
 
 @routes.route("/login", methods=["GET", "POST"])
