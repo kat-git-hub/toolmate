@@ -6,8 +6,10 @@
 <div class="container mt-4">
     <h2>My Tools</h2>
     <a href="{{ url_for('routes.add_tool') }}" class="btn btn-primary mb-3">➕ Add Tool</a>
+
+    <h3>🛠 Tools You Own</h3>
     <div class="row">
-        {% for tool in tools %}
+        {% for tool in owned_tools %}
         <div class="col-md-4 mb-4">
             <div class="card">
                 <img src="{{ tool.image_url }}" class="card-img-top" alt="{{ tool.name }}">
@@ -24,6 +26,27 @@
         </div>
         {% else %}
         <p>You haven't added any tools yet.</p>
+        {% endfor %}
+    </div>
+
+    <h3>🔧 Tools You Rented</h3>
+    <div class="row">
+        {% for tool in rented_tools %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ tool.image_url }}" class="card-img-top" alt="{{ tool.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ tool.name }}</h5>
+                    <p class="card-text">{{ tool.description }}</p>
+                    <p class="fw-bold">${{ tool.price_per_day }} per day</p>
+                    <form action="{{ url_for('routes.return_tool', tool_id=tool.id) }}" method="post">
+                        <button type="submit" class="btn btn-success">🔄 Return</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p>You haven't rented any tools yet.</p>
         {% endfor %}
     </div>
 </div>

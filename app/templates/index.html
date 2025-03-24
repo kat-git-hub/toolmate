@@ -3,43 +3,36 @@
 {% block title %}Welcome to ToolMate{% endblock %}
 
 {% block content %}
-    <!-- Header -->
-    <header class="bg-dark py-5">
-        <div class="container px-5">
-            <div class="row gx-5 justify-content-center">
-                <div class="col-lg-6">
-                    <div class="text-center my-5">
-                        <h1 class="display-5 fw-bolder text-white mb-2">Why buy when you can rent?</h1>
-                        <p class="lead text-white-50 mb-4">Save money and space by renting the tools you need for any project.</p>
-                        <!-- <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-                            <a class="btn btn-primary btn-lg px-4 me-sm-3" href="#features">Get Started</a>
-                            <a class="btn btn-outline-light btn-lg px-4" href="#">Learn More</a>
-                        </div> -->
-                    </div>
+<header class="bg-dark py-5">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-6">
+                <div class="text-center my-5">
+                    <h1 class="display-5 fw-bolder text-white mb-2">Why buy when you can rent?</h1>
+                    <p class="lead text-white-50 mb-4">Save money and space by renting the tools you need for any project.</p>
                 </div>
             </div>
         </div>
-    </header>
-    
-    <!-- Features section -->
-    <section class="py-5 border-bottom" id="features">
-        <div class="container mt-5">
-            <div class="text-center mb-5">
+    </div>
+</header>
+
+<section class="py-5 border-bottom" id="features">
+    <div class="container mt-5">
+        <div class="text-center mb-5">
             <h2>User Locations</h2>
             <div id="map" style="height: 500px;"></div>
         </div>
     </div>
-    </section>
+</section>
 
-    <!-- Product Cards Section -->
-    <section class="py-5">
-        <div class="container px-5 my-5">
-            <div class="text-center mb-5">
-                <h2 class="fw-bolder">Available Tools</h2>
-                <p class="lead mb-0">Browse our tool catalog</p>
-            </div>
-        
-        <!-- Filter -->
+<section class="py-5">
+    <div class="container px-5 my-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bolder">Available Tools</h2>
+            <p class="lead mb-0">Browse our tool catalog</p>
+        </div>
+
+        <!-- Filters -->
         <div class="container my-4">
             <div class="row">
                 <div class="col-md-3">
@@ -79,92 +72,191 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Cards -->
         <div class="row gx-5" id="toolsContainer">
             {% for tool in tools %}
-            <div class="col-lg-4 mb-5 tool-card" data-category="{{ tool.category }}" data-price="{{ tool.price_per_day }}" data-available="{{ tool.is_available }}">
-                <div class="card h-100 shadow border-0">
+            <div class="col-lg-4 mb-5 tool-card"
+                 data-tool-id="{{ tool.id }}"
+                 data-category="{{ tool.category }}"
+                 data-price="{{ tool.price_per_day }}"
+                 data-available="{{ tool.is_available }}">
+                <div class="card h-100 shadow border-0 d-flex flex-column">
                     <img class="card-img-top" src="{{ tool.image_url }}" alt="{{ tool.name }}">
-                    <div class="card-body p-4">
+                    <div class="card-body d-flex flex-column flex-grow-1">
                         <h5 class="card-title">{{ tool.name }}</h5>
-                        <p class="card-text">{{ tool.description }}</p>
-                        <p class="fw-bold">${{ tool.price_per_day }} per day</p>
-                        <p class="text-muted">Category: {{ tool.category }}</p>
-                        {% if tool.is_available %}
-                            <p class="text-success">✅ Available</p>
-                        {% else %}
-                            <p class="text-danger">❌ Not Available</p>
-                        {% endif %}
-                        <a class="btn btn-primary" href="{{ url_for('routes.tool_details', tool_id=tool.id) }}">View Details</a>
+                        <p class="card-text flex-grow-1">{{ tool.description }}</p>
+                        <div class="mt-auto">
+                            <p class="fw-bold">${{ tool.price_per_day }} per day</p>
+                            {% set category_map = {
+                                "power_tools": "Power Tools",
+                                "hand_tools": "Hand Tools",
+                                "garden": "Garden",
+                                "other": "Other"
+                            } %}
+                            <p class="text-muted">Category: {{ category_map.get(tool.category, tool.category) }}</p>
+                            <p class="{{ 'text-success' if tool.is_available else 'text-danger' }}">
+                                {{ '✅ Available' if tool.is_available else '❌ Not Available' }}
+                            </p>
+                            <a class="btn btn-primary w-100" href="{{ url_for('routes.tool_details', tool_id=tool.id) }}">View Details</a>
+                        </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-        </div>
-    </section>
 
+  
+        <!-- Pagination Controls (Only for Tools) -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('routes.home', page=pagination.prev_num) }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('routes.home', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
 
-    <script>
-        var map = L.map('map').setView([52.5200, 13.4050], 12);
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('routes.home', page=pagination.next_num) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</section>
+
+<script>
+    var map = L.map("map").setView([52.5200, 13.4050], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
     
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+    var users = {{ users|tojson|safe }};
+    var markers = [];
     
-        var users = {{ users|tojson|safe }};
+    function updateMap(filteredToolIds = null) {
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+    
+        // If no filter applied, show all tools
+        let toolIdsToShow = filteredToolIds || new Set(users.flatMap(user => user.tools.map(tool => tool.id)));
     
         users.forEach(user => {
-            if (user.latitude && user.longitude) {
+            const userHasVisibleTool = user.tools.some(tool => toolIdsToShow.has(tool.id));
+    
+            if (user.latitude && user.longitude && userHasVisibleTool) {
                 let popupContent = `<b>${user.name}</b><br>ZIP: ${user.zip_code}<br><ul>`;
-    
-                if (user.tools && user.tools.length > 0) {
-                    user.tools.forEach(tool => {
+                user.tools.forEach(tool => {
+                    if (toolIdsToShow.has(tool.id)) {
                         popupContent += `<li>${tool.name} - $${tool.price_per_day}/day</li>`;
-                    });
-                } else {
-                    popupContent += `<li>No available tools</li>`;
-                }
-    
+                    }
+                });
                 popupContent += `</ul>`;
     
-                L.marker([user.latitude, user.longitude]).addTo(map)
-                    .bindPopup(popupContent);
+                const marker = L.marker([user.latitude, user.longitude])
+                    .bindPopup(popupContent)
+                    .addTo(map);
+    
+                markers.push(marker);
             }
         });
-    </script>
-
-    <script>
-        document.getElementById("applyFilters").addEventListener("click", function () {
-            let searchText = document.getElementById("searchInput").value.toLowerCase();
-            let selectedCategory = document.getElementById("categoryFilter").value;
-            let minPrice = document.getElementById("priceFilterMin").value ? parseFloat(document.getElementById("priceFilterMin").value) : 0;
-            let maxPrice = document.getElementById("priceFilterMax").value ? parseFloat(document.getElementById("priceFilterMax").value) : Infinity;
-            let selectedAvailability = document.getElementById("availabilityFilter").value;
+    }
     
-            document.querySelectorAll(".tool-card").forEach(card => {
-                let toolName = card.querySelector(".card-title").innerText.toLowerCase();
-                let toolCategory = card.getAttribute("data-category");
-                let toolPrice = parseFloat(card.getAttribute("data-price"));
-                let toolAvailability = card.getAttribute("data-available");
+    function getMatchingToolIds() {
+        const searchText = document.getElementById("searchInput").value.toLowerCase();
+        const selectedCategory = document.getElementById("categoryFilter").value;
+        const minPrice = parseFloat(document.getElementById("priceFilterMin").value) || 0;
+        const maxPrice = parseFloat(document.getElementById("priceFilterMax").value) || Infinity;
+        const selectedAvailability = document.getElementById("availabilityFilter").value;
     
-                let matchesName = toolName.includes(searchText);
-                let matchesCategory = selectedCategory === "all" || toolCategory === selectedCategory;
-                let matchesPrice = toolPrice >= minPrice && toolPrice <= maxPrice;
-                let matchesAvailability = 
-                    selectedAvailability === "all" || 
-                    (selectedAvailability === "available" && toolAvailability === "True") || 
-                    (selectedAvailability === "unavailable" && toolAvailability === "False");
+        const matchingToolIds = new Set();
     
-                if (matchesName && matchesCategory && matchesPrice && matchesAvailability) {
-                    card.style.display = "block";
-                } else {
-                    card.style.display = "none";
-                }
-            });
+        document.querySelectorAll(".tool-card").forEach(card => {
+            const toolId = parseInt(card.getAttribute("data-tool-id"));
+            const toolName = card.querySelector(".card-title").innerText.toLowerCase();
+            const toolCategory = card.getAttribute("data-category");
+            const toolPrice = parseFloat(card.getAttribute("data-price"));
+            const toolAvailability = card.getAttribute("data-available");
+    
+            const matches =
+                toolName.includes(searchText) &&
+                (selectedCategory === "all" || toolCategory === selectedCategory) &&
+                toolPrice >= minPrice && toolPrice <= maxPrice &&
+                (selectedAvailability === "all" ||
+                    (selectedAvailability === "available" && toolAvailability === "True") ||
+                    (selectedAvailability === "unavailable" && toolAvailability === "False"));
+    
+            if (matches) {
+                matchingToolIds.add(toolId);
+            }
+    
+            // Show or hide the card
+            card.style.display = matches ? "block" : "none";
         });
+    
+        return matchingToolIds;
+    }
+    
+    const cardsPerPage = 6;
+    let currentPage = 1;
+    
+    function paginateCards(filteredToolIds) {
+        const allCards = Array.from(document.querySelectorAll(".tool-card"));
+        const filteredCards = allCards.filter(card => card.style.display !== "none");
+        const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
+    
+        filteredCards.forEach((card, index) => {
+            card.style.display = (index >= (currentPage - 1) * cardsPerPage && index < currentPage * cardsPerPage)
+                ? "block"
+                : "none";
+        });
+    
+        const paginationContainer = document.getElementById("paginationContainer");
+        if (paginationContainer) paginationContainer.innerHTML = "";
+    
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${i === currentPage ? "active" : ""}`;
+            const a = document.createElement("a");
+            a.className = "page-link";
+            a.href = "#";
+            a.innerText = i;
+            a.addEventListener("click", function (e) {
+                e.preventDefault();
+                currentPage = i;
+                paginateCards(filteredToolIds);
+                updateMap(filteredToolIds);  // update map based on filtered tool ids, not paginated only
+            });
+            li.appendChild(a);
+            paginationContainer?.appendChild(li);
+        }
+    }
+    
+    function applyFilters() {
+        currentPage = 1;
+        const matchingToolIds = getMatchingToolIds();
+        paginateCards(matchingToolIds);
+        updateMap(matchingToolIds);
+    }
+    
+    document.getElementById("applyFilters").addEventListener("click", applyFilters);
+    
+    // Initialize on load
+    window.addEventListener("DOMContentLoaded", () => {
+        applyFilters();  // Show all tools & pins by default
+    });
     </script>
-    
-    
+        
+
 {% endblock %}

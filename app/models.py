@@ -46,22 +46,22 @@ class User(db.Model, UserMixin):
     longitude = db.Column(db.Float, nullable=True)
     tools = db.relationship("Tool", backref="owner", lazy=True)
 
-    def get_coordinates(zip_code, country="Germany"):
-        url = f"https://nominatim.openstreetmap.org/search?postalcode={zip_code}&country={country}&format=json"
-        headers = {"User-Agent": "ToolMateApp/1.0 (contact@example.com)"}
+    # def get_coordinates(zip_code, country="Germany"):
+    #     url = f"https://nominatim.openstreetmap.org/search?postalcode={zip_code}&country={country}&format=json"
+    #     headers = {"User-Agent": "ToolMateApp/1.0 (contact@example.com)"}
 
-        try:
-            response = requests.get(url, headers=headers, timeout=5)
-            response.raise_for_status()
+    #     try:
+    #         response = requests.get(url, headers=headers, timeout=5)
+    #         response.raise_for_status()
 
-            data = response.json()
-            if not data:
-                return None, None
+    #         data = response.json()
+    #         if not data:
+    #             return None, None
 
-            latitude = float(data[0]["lat"])
-            longitude = float(data[0]["lon"])
-            return latitude, longitude
+    #         latitude = float(data[0]["lat"])
+    #         longitude = float(data[0]["lon"])
+    #         return latitude, longitude
 
-        except requests.exceptions.RequestException as e:
-            print(f"Error while retrieving coordinates: {e}")
-            return None, None
+    #     except requests.exceptions.RequestException as e:
+    #         print(f"Error while retrieving coordinates: {e}")
+    #         return None, None
