@@ -15,66 +15,13 @@ from sqlalchemy.orm import joinedload
 from app import db
 from app.models import User, Tool, Rental
 from app.forms import LoginForm, RegistrationForm, ToolForm
+from sqlalchemy import and_
 
 routes = Blueprint("routes", __name__, url_prefix="/")
 
 UPLOAD_FOLDER = "static/images"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
-
-# @routes.route("/")
-# def home():
-#     page = request.args.get("page", 1, type=int)  # Get the current page from query parameters
-#     per_page = 6  # Set number of tools per page
-#     #tools = Tool.query.all()
-#     tools = Tool.query.paginate(page=page, per_page=per_page, error_out=False)
-#     users = User.query.options(joinedload(User.tools)).filter(
-#         User.latitude.isnot(None), User.longitude.isnot(None)
-#     ).all()
-#     users_data = [
-#         {
-#             "name": user.name,
-#             "zip_code": user.zip_code or "",
-#             "latitude": user.latitude or 0,
-#             "longitude": user.longitude or 0,
-#             "tools": [
-#                 {"id": tool.id, "name": tool.name, "price_per_day": tool.price_per_day}
-#                 for tool in user.tools
-#             ],
-#         }
-#         for user in users
-#     ]
-#     return render_template("index.html", tools=tools, users=users_data)
-
-# @routes.route("/")
-# def home():
-#     page = request.args.get("page", 1, type=int)  # Get page number from query params
-#     per_page = 6  # Number of tools per page
-
-#     tools = Tool.query.paginate(page=page, per_page=per_page, error_out=False)
-
-#     users = User.query.options(joinedload(User.tools)).filter(
-#         User.latitude.isnot(None), User.longitude.isnot(None)
-#     ).all()
-    
-#     users_data = [
-#         {
-#             "name": user.name,
-#             "zip_code": user.zip_code or "",
-#             "latitude": user.latitude or 0,
-#             "longitude": user.longitude or 0,
-#             "tools": [
-#                 {"id": tool.id, "name": tool.name, "price_per_day": tool.price_per_day}
-#                 for tool in user.tools
-#             ],
-#         }
-#         for user in users
-#     ]
-
-#     return render_template("index.html", tools=tools.items,         # actual paginated items for cards
-#     pagination=tools,          # full pagination object for .has_prev, .iter_pages, etc.
-#     users=users_data)
-from sqlalchemy import and_
 
 @routes.route("/", methods=["GET"])
 def home():
@@ -125,7 +72,6 @@ def home():
     ]
 
     return render_template("index.html", tools=tools, users=users_data, pagination=pagination)
-
 
 
 @routes.route("/login", methods=["GET", "POST"])
@@ -210,17 +156,11 @@ def add_tool():
     return render_template("add_tool.html", title="Add Tool", form=form)
 
 
-# @routes.route("/my_tools")
-# @login_required
-# def my_tools():
-#     tools = Tool.query.filter_by(user_id=current_user.id).all()
-#     return render_template("my_tools.html", tools=tools)
 @routes.route("/my_tools")
 @login_required
 def my_tools():
     """Show user's owned and rented tools."""
     owned_tools = Tool.query.filter_by(user_id=current_user.id).all()
-    
     # Get tools rented by the user
     rented_tools = db.session.query(Tool).join(Rental).filter(
         Rental.renter_id == current_user.id

@@ -104,7 +104,7 @@
             {% endfor %}
         </div>
 
-        <!-- Pagination Controls (Only for Tools) -->
+        <!-- Pagination Controls -->
         <nav aria-label="Page navigation">
             {% set args = request.args.to_dict() %}
             {% set _ = args.pop('page', None) %}  {# Remove 'page' so it's not passed twice #}
