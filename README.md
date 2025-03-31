@@ -29,10 +29,10 @@
 ## Quick Start Guide
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/kat-git-hub/toolmate.git
-   cd toolmate 
-   ```
+```
+git clone https://github.com/kat-git-hub/toolmate.git
+cd toolmate 
+```
 
 2. Install dependencies
 Make sure Poetry is installed, then run:
