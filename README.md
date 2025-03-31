@@ -1,11 +1,9 @@
 # Toolmate App
----
-[![Maintainability](https://api.codeclimate.com/v1/badges/25d8e43843087ec87384/maintainability)](https://codeclimate.com/github/kat-git-hub/toolmate/maintainability)
-
-[![Test Coverage](https://api.codeclimate.com/v1/badges/25d8e43843087ec87384/test_coverage)](https://codeclimate.com/github/kat-git-hub/toolmate/test_coverage)
----
 
 **ToolMate** is a web application that allows people to rent tools from their neighbors instead of buying them. Whether you're doing a one-time project or need something temporarily, ToolMate helps you save money, reduce waste, and build community.
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/25d8e43843087ec87384/maintainability)](https://codeclimate.com/github/kat-git-hub/toolmate/maintainability)   [![Test Coverage](https://api.codeclimate.com/v1/badges/25d8e43843087ec87384/test_coverage)](https://codeclimate.com/github/kat-git-hub/toolmate/test_coverage)
+
 
 ## Features
 
